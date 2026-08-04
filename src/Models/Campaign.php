@@ -258,7 +258,9 @@ class Campaign extends BaseModel
     public function getMergedContentAttribute(): ?string
     {
         if ($this->template_id) {
-            return str_replace(['{{content}}', '{{ content }}'], $this->content, $this->template->content);
+            // Null-guard both operands: a campaign has null `content` until the
+            // body is entered, and str_replace() rejects null under PHP 8.
+            return str_replace(['{{content}}', '{{ content }}'], $this->content ?? '', $this->template?->content ?? '');
         }
 
         return $this->content;
