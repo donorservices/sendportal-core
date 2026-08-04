@@ -53,9 +53,14 @@ class SmtpAdapter extends BaseMailAdapter
 
         $encryption = Arr::get($this->config, 'encryption');
 
-        $scheme = ! is_null($encryption) && $encryption === 'tls'
-            ? ((Arr::get($this->config, 'port') == 465) ? 'smtps' : 'smtp')
-            : '';
+        // Derive the scheme from the port so it is never empty (Symfony rejects
+        // an empty scheme). Implicit TLS on 465 (or ssl) -> smtps; everything
+        // else -> smtp, which negotiates STARTTLS opportunistically (e.g. Resend
+        // on 587). Previously any encryption value other than exactly 'tls'
+        // produced an empty scheme and a 500.
+        $scheme = ((int) Arr::get($this->config, 'port') === 465 || $encryption === 'ssl')
+            ? 'smtps'
+            : 'smtp';
 
         $dsn = new Dsn(
             $scheme,
