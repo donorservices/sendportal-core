@@ -1,7 +1,7 @@
 {
-    "name": "mettle/sendportal-core",
-    "homepage": "https://github.com/mettle/sendportal-core",
-    "description": "Sendportal core functionality.",
+    "name": "donorservices/sendportal-core",
+    "homepage": "https://github.com/donorservices/sendportal-core",
+    "description": "Sendportal core - donorservices fork of mettle/sendportal-core (v3.0.2 base).",
     "type": "library",
     "license": "MIT",
     "authors": [],
