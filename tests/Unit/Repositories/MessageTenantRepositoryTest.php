@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Repositories;
 
+use PHPUnit\Framework\Attributes\Test;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterval;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -30,7 +31,7 @@ class MessageTenantRepositoryTest extends TestCase
         $this->repository = app()->make(MessageTenantRepositoryInterface::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_should_not_count_messages_that_have_not_been_opened_yet()
     {
         // given
@@ -51,7 +52,7 @@ class MessageTenantRepositoryTest extends TestCase
         self::assertTrue($data->isEmpty());
     }
 
-    /** @test */
+    #[Test]
     public function it_should_count_messages_that_have_been_opened_grouped_by_day_period()
     {
         // given
@@ -93,7 +94,7 @@ class MessageTenantRepositoryTest extends TestCase
         self::assertEquals($next_opened_at->startOfDay()->toDateTimeString(), $data->last()->period_start);
     }
 
-    /** @test */
+    #[Test]
     public function it_should_count_messages_that_have_been_opened_grouped_by_two_hours_period()
     {
         // given
@@ -143,7 +144,7 @@ class MessageTenantRepositoryTest extends TestCase
         self::assertEquals($next_opened_at->startOfDay()->toDateTimeString(), $data[2]->period_start);
     }
 
-    /** @test */
+    #[Test]
     public function it_should_count_messages_that_have_been_opened_grouped_by_hour_period()
     {
         // given

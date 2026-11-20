@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Feature\Webhooks;
 
+use PHPUnit\Framework\Attributes\Test;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Illuminate\Support\Str;
@@ -31,7 +32,7 @@ class MailgunWebhooksTest extends TestCase
         $this->webHookKey = Str::random();
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_delivery_webhooks()
     {
         // given
@@ -50,7 +51,7 @@ class MailgunWebhooksTest extends TestCase
         self::assertNotNull($message->refresh()->delivered_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_opened_webhooks()
     {
         // given
@@ -71,7 +72,7 @@ class MailgunWebhooksTest extends TestCase
         self::assertNotNull($message->opened_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_clicked_webhooks()
     {
         // given
@@ -94,7 +95,7 @@ class MailgunWebhooksTest extends TestCase
         self::assertNotNull($message->clicked_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_complained_webhooks()
     {
         // given
@@ -113,7 +114,7 @@ class MailgunWebhooksTest extends TestCase
         self::assertNotNull($message->refresh()->unsubscribed_at);
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_permanent_failure_webhooks()
     {
         // given
@@ -142,7 +143,7 @@ class MailgunWebhooksTest extends TestCase
         );
     }
 
-    /** @test */
+    #[Test]
     public function it_accepts_temporary_failure_webhooks()
     {
         // given

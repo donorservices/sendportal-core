@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Services;
 
+use PHPUnit\Framework\Attributes\Test;
 use Aws\Sdk;
 use Aws\Ses\SesClient;
 use Sendportal\Base\Interfaces\QuotaServiceInterface;
@@ -23,7 +24,7 @@ class QuotaServiceTest extends TestCase
         $this->quotaService = app(QuotaServiceInterface::class);
     }
 
-    /** @test */
+    #[Test]
     public function fewer_subscribers_than_quota_available()
     {
         // given
@@ -35,7 +36,7 @@ class QuotaServiceTest extends TestCase
         self::assertFalse($this->quotaService->exceedsQuota($emailService, 1));
     }
 
-    /** @test */
+    #[Test]
     public function more_subscribers_than_quota_available()
     {
         // given
@@ -47,7 +48,7 @@ class QuotaServiceTest extends TestCase
         self::assertTrue($this->quotaService->exceedsQuota($emailService, 2));
     }
 
-    /** @test */
+    #[Test]
     public function send_quota_not_available()
     {
         // given
@@ -59,7 +60,7 @@ class QuotaServiceTest extends TestCase
         self::assertFalse($this->quotaService->exceedsQuota($emailService, 1));
     }
 
-    /** @test */
+    #[Test]
     public function unlimited_quota()
     {
         // given
@@ -71,7 +72,7 @@ class QuotaServiceTest extends TestCase
         self::assertFalse($this->quotaService->exceedsQuota($emailService, 1));
     }
 
-    protected function mockMailAdapter(int $quota = null): void
+    protected function mockMailAdapter(?int $quota = null): void
     {
         $sendQuota = [];
 
@@ -82,13 +83,11 @@ class QuotaServiceTest extends TestCase
             ];
         }
 
-        $sesClient = $this->getMockBuilder(SesClient::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $sesClient = $this->createStub(SesClient::class);
 
         $sesClient->method('__call')->willReturn(collect($sendQuota));
 
-        $aws = $this->getMockBuilder(Sdk::class)->getMock();
+        $aws = $this->createStub(Sdk::class);
         $aws->method('createClient')->willReturn($sesClient);
 
         $this->app->singleton('aws', function () use ($aws) {

@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Tests\Unit\Models;
 
+use PHPUnit\Framework\Attributes\Test;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Sendportal\Base\Models\Message;
 use Sendportal\Base\Models\MessageFailure;
@@ -13,7 +14,7 @@ class MessageTest extends TestCase
 {
     use RefreshDatabase;
 
-    /** @test */
+    #[Test]
     public function deleting_a_message_also_deletes_its_associated_failures()
     {
         // given
