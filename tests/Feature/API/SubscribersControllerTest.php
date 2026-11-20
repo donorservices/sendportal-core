@@ -231,4 +231,20 @@ class SubscribersControllerTest extends TestCase
         self::assertContains($tag2->id, $subscriber->tags->pluck('id'));
         self::assertNotContains($tag1->id, $subscriber->tags->pluck('id'));
     }
+
+    #[Test]
+    public function the_subscribers_index_honours_per_page_up_to_100()
+    {
+        $workspaceId = Sendportal::currentWorkspaceId();
+        Subscriber::factory()->count(30)->create(['workspace_id' => $workspaceId]);
+
+        $this->getJson(route('sendportal.api.subscribers.index', ['per_page' => 10]))
+            ->assertOk()->assertJsonCount(10, 'data')->assertJsonPath('meta.per_page', 10);
+
+        $this->getJson(route('sendportal.api.subscribers.index'))
+            ->assertOk()->assertJsonPath('meta.per_page', 25);
+
+        $this->getJson(route('sendportal.api.subscribers.index', ['per_page' => 5000]))
+            ->assertOk()->assertJsonPath('meta.per_page', 100);
+    }
 }

@@ -37,7 +37,11 @@ class SubscribersController extends Controller
     public function index(): AnonymousResourceCollection
     {
         $workspaceId = Sendportal::currentWorkspaceId();
-        $subscribers = $this->subscribers->paginate($workspaceId, 'last_name');
+        // Honour ?per_page= (as the tags endpoint does), capped so API clients
+        // can page through large lists without hitting the rate limit.
+        $perPage = min(max((int) request()->get('per_page', 25), 1), 100);
+
+        $subscribers = $this->subscribers->paginate($workspaceId, 'last_name', [], $perPage);
 
         return SubscriberResource::collection($subscribers);
     }

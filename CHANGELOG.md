@@ -7,6 +7,7 @@
 - Fix: webview, unsubscribe and subscribe pages return 404 (was 500) for unknown message hashes
 - Fix: PHP 8.2+ dynamic property deprecation in API `CampaignStoreRequest`; the draft-status check now uses the `{campaign}` route parameter only
 - Fix: PHP 8.4 implicit-nullable deprecation in `Helper::displayDate()`; missing `Arr` import in `BaseTenantRepository`
+- API: `GET /api/v1/subscribers` honours `?per_page=` (default 25, max 100) like the tags endpoint, so clients can page large lists within the 60 req/min limit
 
 ## 3.0.0 - 2024-04-18
 - Upgrade dependencies to Laravel V11 ([#194](https://github.com/mettle/sendportal-core/pull/194))
