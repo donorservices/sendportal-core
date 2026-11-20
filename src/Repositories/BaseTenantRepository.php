@@ -4,6 +4,7 @@ namespace Sendportal\Base\Repositories;
 
 use Exception;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Arr;
 use RuntimeException;
 use Sendportal\Base\Interfaces\BaseTenantInterface;
 

@@ -20,6 +20,18 @@ class CampaignStoreRequest extends BaseCampaignStoreRequest
      */
     protected $campaigns;
 
+    /**
+     * @var int|null
+     */
+    protected $workspaceId;
+
+    /**
+     * The campaign resolved from the {campaign} route parameter (update only).
+     *
+     * @var Campaign|null
+     */
+    protected $resolvedCampaign;
+
     public function __construct(CampaignTenantRepositoryInterface $campaigns)
     {
         parent::__construct();
@@ -28,7 +40,7 @@ class CampaignStoreRequest extends BaseCampaignStoreRequest
         $this->workspaceId = Sendportal::currentWorkspaceId();
 
         Validator::extendImplicit('valid_status', function ($attribute, $value, $parameters, $validator) {
-            return $this->campaign
+            return $this->route('campaign')
                 ? $this->getCampaign()->status_id === CampaignStatus::STATUS_DRAFT
                 : true;
         });
@@ -39,7 +51,7 @@ class CampaignStoreRequest extends BaseCampaignStoreRequest
      */
     public function getCampaign(): Campaign
     {
-        return $this->campaign = $this->campaigns->find($this->workspaceId, $this->campaign);
+        return $this->resolvedCampaign = $this->campaigns->find($this->workspaceId, $this->route('campaign'));
     }
 
     public function rules(): array

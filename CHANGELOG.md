@@ -1,5 +1,13 @@
 # Sendportal Core
 
+## 3.1.0 - 2026-11-20 (donorservices fork)
+- Support Laravel 12 and 13 (`illuminate/support ^11.0|^12.0|^13.0`); tested on PHP 8.4 with Symfony 8.1
+- Tests migrated to PHPUnit 12 (`#[Test]` attributes, stubs instead of mocks without expectations)
+- Fix: subscriber page returned 500 for unsubscribed subscribers, and reports showed "UTC" instead of dates (`Helper::displayDate()` used Carbon 3's `tz(null)` getter)
+- Fix: webview, unsubscribe and subscribe pages return 404 (was 500) for unknown message hashes
+- Fix: PHP 8.2+ dynamic property deprecation in API `CampaignStoreRequest`; the draft-status check now uses the `{campaign}` route parameter only
+- Fix: PHP 8.4 implicit-nullable deprecation in `Helper::displayDate()`; missing `Arr` import in `BaseTenantRepository`
+
 ## 3.0.0 - 2024-04-18
 - Upgrade dependencies to Laravel V11 ([#194](https://github.com/mettle/sendportal-core/pull/194))
 

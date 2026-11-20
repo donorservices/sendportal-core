@@ -26,7 +26,7 @@ class WebviewController extends Controller
     public function show(string $messageHash): ViewContract
     {
         /** @var Message $message */
-        $message = Message::with('subscriber')->where('hash', $messageHash)->first();
+        $message = Message::with('subscriber')->where('hash', $messageHash)->firstOrFail();
 
         $content = $this->merger->handle($message);
 

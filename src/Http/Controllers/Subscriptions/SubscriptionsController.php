@@ -27,7 +27,7 @@ class SubscriptionsController extends Controller
      */
     public function unsubscribe(string $messageHash): View
     {
-        $message = Message::with('subscriber')->where('hash', $messageHash)->first();
+        $message = Message::with('subscriber')->where('hash', $messageHash)->firstOrFail();
 
         return view('sendportal::subscriptions.unsubscribe', compact('message'));
     }
@@ -37,7 +37,7 @@ class SubscriptionsController extends Controller
      */
     public function subscribe(string $messageHash): View
     {
-        $message = Message::with('subscriber')->where('hash', $messageHash)->first();
+        $message = Message::with('subscriber')->where('hash', $messageHash)->firstOrFail();
 
         return view('sendportal::subscriptions.subscribe', compact('message'));
     }
@@ -47,7 +47,7 @@ class SubscriptionsController extends Controller
      */
     public function update(SubscriptionToggleRequest $request, string $messageHash): RedirectResponse
     {
-        $message = Message::where('hash', $messageHash)->first();
+        $message = Message::where('hash', $messageHash)->firstOrFail();
         $subscriber = $message->subscriber;
 
         $unsubscribed = (bool)$request->get('unsubscribed');

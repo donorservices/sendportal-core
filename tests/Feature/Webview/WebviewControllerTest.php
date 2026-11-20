@@ -28,4 +28,11 @@ class WebviewControllerTest extends TestCase
         // then
         $response->assertOk();
     }
+
+    #[Test]
+    public function an_unknown_message_hash_returns_404_in_the_webview()
+    {
+        $this->get(route('sendportal.webview.show', '00000000-0000-4000-8000-000000000000'))
+            ->assertNotFound();
+    }
 }
