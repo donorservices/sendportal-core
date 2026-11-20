@@ -141,4 +141,19 @@ class TagsControllerTest extends TestCase
 
         self::assertEquals(2, Tag::where('name', $tag->name)->count());
     }
+
+    #[Test]
+    public function a_tag_cannot_be_renamed_to_another_tags_name_in_the_workspace()
+    {
+        $existing = $this->createTag();
+        $tag = $this->createTag();
+
+        $this->putJson(route('sendportal.api.tags.update', ['tag' => $tag->id]), [
+            'name' => $existing->name,
+        ])->assertStatus(422)->assertJsonValidationErrors('name');
+
+        $this->putJson(route('sendportal.api.tags.update', ['tag' => $tag->id]), [
+            'name' => $tag->name,
+        ])->assertOk();
+    }
 }

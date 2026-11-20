@@ -10,6 +10,7 @@ use Illuminate\Http\RedirectResponse;
 use Sendportal\Base\Facades\Sendportal;
 use Sendportal\Base\Http\Controllers\Controller;
 use Sendportal\Base\Http\Requests\CampaignStoreRequest;
+use Sendportal\Base\Models\Campaign;
 use Sendportal\Base\Models\EmailService;
 use Sendportal\Base\Repositories\Campaigns\CampaignTenantRepositoryInterface;
 use Sendportal\Base\Repositories\EmailServiceTenantRepository;
@@ -116,20 +117,26 @@ class CampaignsController extends Controller
     /**
      * @throws Exception
      */
-    public function show(int $id): ViewContract
+    public function show(int $id): RedirectResponse
     {
         $campaign = $this->campaigns->find(Sendportal::currentWorkspaceId(), $id);
 
-        return view('sendportal::campaigns.show', compact('campaign'));
+        return $this->redirectToCampaignPage($campaign);
     }
 
     /**
      * @throws Exception
      */
-    public function edit(int $id): ViewContract
+    public function edit(int $id)
     {
         $workspaceId = Sendportal::currentWorkspaceId();
         $campaign = $this->campaigns->find($workspaceId, $id);
+
+        if (! $campaign->draft) {
+            return $this->redirectToCampaignPage($campaign)
+                ->withErrors(__('A campaign cannot be updated if its status is not draft'));
+        }
+
         $emailServices = $this->emailServices->all($workspaceId, 'id', ['type'])
             ->map(static function (EmailService $emailService) {
                 $emailService->formatted_name = "{$emailService->name} ({$emailService->type->name})";
@@ -146,6 +153,13 @@ class CampaignsController extends Controller
     public function update(int $campaignId, CampaignStoreRequest $request): RedirectResponse
     {
         $workspaceId = Sendportal::currentWorkspaceId();
+        $existing = $this->campaigns->find($workspaceId, $campaignId);
+
+        if (! $existing->draft) {
+            return $this->redirectToCampaignPage($existing)
+                ->withErrors(__('A campaign cannot be updated if its status is not draft'));
+        }
+
         $campaign = $this->campaigns->update(
             $workspaceId,
             $campaignId,
@@ -211,5 +225,22 @@ class CampaignsController extends Controller
         }
 
         return $input;
+    }
+
+    /**
+     * Send the user to the page that matches the campaign's status, the same
+     * way the campaign index links them.
+     */
+    protected function redirectToCampaignPage(Campaign $campaign): RedirectResponse
+    {
+        if ($campaign->draft) {
+            return redirect()->route('sendportal.campaigns.edit', $campaign->id);
+        }
+
+        if ($campaign->sent) {
+            return redirect()->route('sendportal.campaigns.reports.index', $campaign->id);
+        }
+
+        return redirect()->route('sendportal.campaigns.status', $campaign->id);
     }
 }

@@ -155,4 +155,19 @@ class SubscribersControllerTest extends TestCase
         $response->assertDontSee($thirdTagSubscriber->email);
         $response->assertDontSee("{$thirdTagSubscriber->first_name} {$thirdTagSubscriber->last_name}");
     }
+
+    #[Test]
+    public function the_export_filename_uses_the_time_with_minutes()
+    {
+        \Illuminate\Support\Carbon::setTestNow('2026-03-04 05:06:07');
+
+        Subscriber::factory()->create(['workspace_id' => Sendportal::currentWorkspaceId()]);
+
+        $response = $this->get(route('sendportal.subscribers.export'));
+
+        $response->assertOk();
+        self::assertStringContainsString('subscribers-2026-03-04-05-06-07.csv', $response->headers->get('Content-Disposition'));
+
+        \Illuminate\Support\Carbon::setTestNow();
+    }
 }

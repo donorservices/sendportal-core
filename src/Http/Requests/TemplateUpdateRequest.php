@@ -5,6 +5,7 @@ namespace Sendportal\Base\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Sendportal\Base\Facades\Sendportal;
+use Sendportal\Base\Rules\ContainsContentTag;
 
 class TemplateUpdateRequest extends FormRequest
 {
@@ -23,7 +24,7 @@ class TemplateUpdateRequest extends FormRequest
                     ->where('workspace_id', Sendportal::currentWorkspaceId())
                     ->ignore($this->template),
             ],
-            'content' => 'required',
+            'content' => ['required', 'string', new ContainsContentTag()],
         ];
     }
 

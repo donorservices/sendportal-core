@@ -129,6 +129,7 @@ class MailjetWebhooksTest extends TestCase
 
         // then
         self::assertEquals('2015-05-05 07:49:55', $message->refresh()->unsubscribed_at->toDateTimeString());
+        self::assertEquals('2015-05-05 07:49:55', $message->complained_at->toDateTimeString());
     }
 
     #[Test]

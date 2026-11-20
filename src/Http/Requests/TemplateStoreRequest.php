@@ -5,6 +5,7 @@ namespace Sendportal\Base\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Sendportal\Base\Facades\Sendportal;
+use Sendportal\Base\Rules\ContainsContentTag;
 
 class TemplateStoreRequest extends FormRequest
 {
@@ -22,7 +23,7 @@ class TemplateStoreRequest extends FormRequest
                 Rule::unique('sendportal_templates')
                     ->where('workspace_id', Sendportal::currentWorkspaceId()),
             ],
-            'content' => 'required',
+            'content' => ['required', 'string', new ContainsContentTag()],
         ];
     }
 

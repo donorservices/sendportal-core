@@ -158,7 +158,7 @@ class TemplatesControllerTest extends TestCase
 
         $request = [
             'name' => $template->name,
-            'content' => 'test'
+            'content' => 'test {{content}}'
         ];
 
         $this->postJson($route, $request)
@@ -192,5 +192,39 @@ class TemplatesControllerTest extends TestCase
             ->assertStatus(201);
 
         self::assertEquals(2, Template::where('name', $template->name)->count());
+    }
+
+    #[Test]
+    public function an_api_template_must_contain_the_content_tag()
+    {
+        $this->postJson(route('sendportal.api.templates.store'), [
+            'name' => 'No content tag',
+            'content' => '<p>Header</p>',
+        ])->assertStatus(422)->assertJsonValidationErrors('content');
+
+        $template = Template::factory()->create(['workspace_id' => Sendportal::currentWorkspaceId()]);
+
+        $this->putJson(route('sendportal.api.templates.update', ['template' => $template->id]), [
+            'name' => $template->name,
+            'content' => '<p>Tag removed</p>',
+        ])->assertStatus(422)->assertJsonValidationErrors('content');
+    }
+
+    #[Test]
+    public function a_template_cannot_be_renamed_to_another_templates_name_in_the_workspace()
+    {
+        $existing = Template::factory()->create(['workspace_id' => Sendportal::currentWorkspaceId()]);
+        $template = Template::factory()->create(['workspace_id' => Sendportal::currentWorkspaceId()]);
+
+        $this->putJson(route('sendportal.api.templates.update', ['template' => $template->id]), [
+            'name' => $existing->name,
+            'content' => '{{content}}',
+        ])->assertStatus(422)->assertJsonValidationErrors('name');
+
+        // Keeping its own name is fine.
+        $this->putJson(route('sendportal.api.templates.update', ['template' => $template->id]), [
+            'name' => $template->name,
+            'content' => 'New {{content}}',
+        ])->assertOk();
     }
 }

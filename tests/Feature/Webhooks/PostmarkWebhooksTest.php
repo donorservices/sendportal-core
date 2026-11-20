@@ -106,6 +106,7 @@ class PostmarkWebhooksTest extends TestCase
 
         // then
         self::assertNotNull($message->refresh()->unsubscribed_at);
+        self::assertNotNull($message->complained_at);
     }
 
     #[Test]

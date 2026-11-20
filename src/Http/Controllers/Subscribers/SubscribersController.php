@@ -161,7 +161,7 @@ class SubscribersController extends Controller
         }
 
         return (new FastExcel($subscribers))
-            ->download(sprintf('subscribers-%s.csv', date('Y-m-d-H-m-s')), static function ($subscriber) {
+            ->download(sprintf('subscribers-%s.csv', now()->format('Y-m-d-H-i-s')), static function ($subscriber) {
                 return [
                     'id' => $subscriber->id,
                     'hash' => $subscriber->hash,

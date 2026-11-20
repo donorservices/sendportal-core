@@ -8,6 +8,14 @@
 - Fix: PHP 8.2+ dynamic property deprecation in API `CampaignStoreRequest`; the draft-status check now uses the `{campaign}` route parameter only
 - Fix: PHP 8.4 implicit-nullable deprecation in `Helper::displayDate()`; missing `Arr` import in `BaseTenantRepository`
 - API: `GET /api/v1/subscribers` honours `?per_page=` (default 25, max 100) like the tags endpoint, so clients can page large lists within the 60 req/min limit
+- Fix: `GET /campaigns/{id}` returned 500 (`View [common.template] not found`); it now redirects to the campaign's edit, status or report page by status
+- Fix: the web UI let you edit and update campaigns that were no longer drafts (the API already refused); it now redirects with an error
+- Fix: spam complaints now set the message's `complained_at` (previously only `unsubscribed_at`, so complaints were never recorded)
+- Fix: Postal adapter rewritten for `postal/postal` 2.x (it referenced the removed `Postal\SendMessage` class, so every Postal send failed)
+- Fix: subscriber export filename used the month (`m`) where it meant minutes
+- Fix: API template and tag updates checked name uniqueness against a non-existent `workspaceId` route parameter, so duplicate names were allowed
+- Templates must contain `{{content}}` (web and API); without it campaign content was silently dropped
+- PHPUnit configuration migrated to the 12.x schema
 
 ## 3.0.0 - 2024-04-18
 - Upgrade dependencies to Laravel V11 ([#194](https://github.com/mettle/sendportal-core/pull/194))

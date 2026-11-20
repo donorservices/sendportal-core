@@ -6,6 +6,7 @@ namespace Sendportal\Base\Http\Requests\Api;
 
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
+use Sendportal\Base\Facades\Sendportal;
 
 class TagUpdateRequest extends FormRequest
 {
@@ -15,7 +16,7 @@ class TagUpdateRequest extends FormRequest
             'name' => [
                 'required',
                 Rule::unique('sendportal_tags')
-                    ->where('workspace_id', $this->route('workspaceId'))
+                    ->where('workspace_id', Sendportal::currentWorkspaceId())
                     ->ignore($this->route('tag')),
             ],
             'subscribers' => [

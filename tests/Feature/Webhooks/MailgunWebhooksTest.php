@@ -112,6 +112,7 @@ class MailgunWebhooksTest extends TestCase
         $response->assertOk();
 
         self::assertNotNull($message->refresh()->unsubscribed_at);
+        self::assertNotNull($message->complained_at);
     }
 
     #[Test]

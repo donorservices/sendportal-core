@@ -62,7 +62,7 @@ class TemplatesControllerTest extends TestCase
         // given
         $data = [
             'name' => $this->faker->name(),
-            'content' => $this->faker->sentence()
+            'content' => $this->faker->sentence() . ' {{content}}'
         ];
 
         // when
@@ -131,7 +131,7 @@ class TemplatesControllerTest extends TestCase
 
         $data = [
             'name' => $this->faker->name(),
-            'content' => $this->faker->sentence()
+            'content' => $this->faker->sentence() . ' {{content}}'
         ];
 
         // when
@@ -242,5 +242,30 @@ class TemplatesControllerTest extends TestCase
             ->assertSessionHasErrors('name');
 
         self::assertEquals(1, Template::where('name', $template->name)->count());
+    }
+
+    #[Test]
+    public function a_template_must_contain_the_content_tag()
+    {
+        $this->post(route('sendportal.templates.store'), [
+            'name' => 'No content tag',
+            'content' => '<p>Header</p><p>Footer</p>',
+        ])->assertSessionHasErrors('content');
+
+        $this->assertDatabaseMissing('sendportal_templates', ['name' => 'No content tag']);
+
+        $template = Template::factory()->create(['workspace_id' => Sendportal::currentWorkspaceId()]);
+
+        $this->put(route('sendportal.templates.update', $template->id), [
+            'name' => $template->name,
+            'content' => '<p>Tag removed</p>',
+        ])->assertSessionHasErrors('content');
+
+        $this->post(route('sendportal.templates.store'), [
+            'name' => 'Spaced tag',
+            'content' => '<p>Header</p>{{ content }}<p>Footer</p>',
+        ])->assertRedirect(route('sendportal.templates.index'));
+
+        $this->assertDatabaseHas('sendportal_templates', ['name' => 'Spaced tag']);
     }
 }

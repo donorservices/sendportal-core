@@ -7,6 +7,7 @@ namespace Sendportal\Base\Http\Requests\Api;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 use Sendportal\Base\Facades\Sendportal;
+use Sendportal\Base\Rules\ContainsContentTag;
 
 class TemplateStoreRequest extends FormRequest
 {
@@ -23,6 +24,7 @@ class TemplateStoreRequest extends FormRequest
             'content' => [
                 'required',
                 'string',
+                new ContainsContentTag(),
             ],
         ];
     }

@@ -7,37 +7,47 @@ namespace Sendportal\Base\Adapters;
 use DomainException;
 use Illuminate\Support\Arr;
 use Postal\Client;
-use Postal\SendMessage;
+use Postal\Send\Message;
+use Postal\Send\Result;
 use Sendportal\Base\Services\Messages\MessageTrackingOptions;
 
 class PostalAdapter extends BaseMailAdapter
 {
     /**
-     * @throws TypeException
-     * @throws \Throwable
+     * @throws \Postal\ApiException
+     * @throws \GuzzleHttp\Exception\GuzzleException
      */
     public function send(string $fromEmail, string $fromName, string $toEmail, string $subject, MessageTrackingOptions $trackingOptions, string $content): string
     {
-        $client = new Client('https://' . Arr::get($this->config, 'postal_host'), Arr::get($this->config, 'key'));
+        $message = (new Message())
+            ->to($toEmail)
+            ->from($fromName . ' <' . $fromEmail . '>')
+            ->subject($subject)
+            ->htmlBody($content);
 
-        $message = new SendMessage($client);
-        $message->to($toEmail);
-        $message->from($fromName.' <'.$fromEmail.'>');
-        $message->subject($subject);
-        $message->htmlBody($content);
-        $response = $message->send();
+        $result = $this->resolveClient()->send->message($message);
 
-        return $this->resolveMessageId($response);
+        return $this->resolveMessageId($result, $toEmail);
     }
 
-
-
-    protected function resolveMessageId($response): string
+    protected function resolveClient(): Client
     {
-        foreach ($response->recipients() as $email => $message) {
-            return (string) $message->id();
+        return new Client('https://' . Arr::get($this->config, 'postal_host'), (string) Arr::get($this->config, 'key'));
+    }
+
+    /**
+     * Postal webhooks identify messages by the per-recipient numeric ID
+     * (payload.message.id), so that is what we store.
+     */
+    protected function resolveMessageId(Result $result, string $toEmail): string
+    {
+        $recipients = $result->recipients();
+        $message = $recipients[strtolower($toEmail)] ?? reset($recipients);
+
+        if (! $message) {
+            throw new DomainException('Unable to resolve message ID');
         }
 
-        throw new DomainException('Unable to resolve message ID');
+        return (string) $message->id;
     }
 }

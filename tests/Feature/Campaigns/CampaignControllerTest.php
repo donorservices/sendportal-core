@@ -328,4 +328,65 @@ class CampaignControllerTest extends TestCase
             'content' => $this->faker->paragraph()
         ], $overrides);
     }
+
+    #[Test]
+    public function the_show_route_redirects_to_the_page_for_the_campaign_status()
+    {
+        $workspaceId = Sendportal::currentWorkspaceId();
+
+        $draft = Campaign::factory()->draft()->create(['workspace_id' => $workspaceId]);
+        $this->get(route('sendportal.campaigns.show', $draft->id))
+            ->assertRedirect(route('sendportal.campaigns.edit', $draft->id));
+
+        $queued = Campaign::factory()->queued()->create(['workspace_id' => $workspaceId]);
+        $this->get(route('sendportal.campaigns.show', $queued->id))
+            ->assertRedirect(route('sendportal.campaigns.status', $queued->id));
+
+        $sent = Campaign::factory()->sent()->create(['workspace_id' => $workspaceId]);
+        $this->get(route('sendportal.campaigns.show', $sent->id))
+            ->assertRedirect(route('sendportal.campaigns.reports.index', $sent->id));
+
+        $this->followingRedirects()
+            ->get(route('sendportal.campaigns.show', $sent->id))
+            ->assertOk();
+    }
+
+    #[Test]
+    public function the_show_route_returns_404_for_an_unknown_campaign()
+    {
+        $this->get(route('sendportal.campaigns.show', 999999))->assertNotFound();
+    }
+
+    #[Test]
+    public function a_sent_campaign_cannot_be_edited()
+    {
+        $campaign = Campaign::factory()->sent()->create(['workspace_id' => Sendportal::currentWorkspaceId()]);
+
+        $this->get(route('sendportal.campaigns.edit', $campaign->id))
+            ->assertRedirect(route('sendportal.campaigns.reports.index', $campaign->id))
+            ->assertSessionHasErrors();
+    }
+
+    #[Test]
+    public function a_queued_campaign_cannot_be_edited()
+    {
+        $campaign = Campaign::factory()->queued()->create(['workspace_id' => Sendportal::currentWorkspaceId()]);
+
+        $this->get(route('sendportal.campaigns.edit', $campaign->id))
+            ->assertRedirect(route('sendportal.campaigns.status', $campaign->id))
+            ->assertSessionHasErrors();
+    }
+
+    #[Test]
+    public function a_sent_campaign_cannot_be_updated()
+    {
+        $campaign = Campaign::factory()->sent()->create(['workspace_id' => Sendportal::currentWorkspaceId()]);
+        $originalName = $campaign->name;
+
+        $this->put(route('sendportal.campaigns.update', $campaign->id), $this->generateCampaignStoreData(['name' => 'Changed after sending']))
+            ->assertRedirect(route('sendportal.campaigns.reports.index', $campaign->id))
+            ->assertSessionHasErrors();
+
+        self::assertSame($originalName, $campaign->fresh()->name);
+    }
 }

@@ -115,8 +115,17 @@ class EmailWebhookService
             return;
         }
 
+        // A complaint is recorded as a complaint and, because the subscriber
+        // is unsubscribed below, as an unsubscribe for this message as well.
         if (! $message->complained_at) {
+            $message->complained_at = $timestamp;
+        }
+
+        if (! $message->unsubscribed_at) {
             $message->unsubscribed_at = $timestamp;
+        }
+
+        if ($message->isDirty()) {
             $message->save();
         }
 
