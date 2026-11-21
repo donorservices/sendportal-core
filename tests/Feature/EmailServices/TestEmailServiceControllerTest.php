@@ -165,4 +165,24 @@ class TestEmailServiceControllerTest extends TestCase
         $response->assertRedirect(route('sendportal.email_services.test.create', $emailService->id));
         $response->assertSessionHas('error', 'Response: whoops');
     }
+
+    #[Test]
+    public function a_test_that_returns_no_message_id_flashes_an_error()
+    {
+        $emailService = EmailService::factory()->create(['workspace_id' => Sendportal::currentWorkspaceId()]);
+
+        $this->instance(DispatchTestMessage::class, Mockery::mock(DispatchTestMessage::class, function ($mock) {
+            $mock->shouldReceive('testService')->once()->andReturnNull();
+        }));
+
+        $this->from(route('sendportal.email_services.test.create', $emailService->id))
+            ->post(route('sendportal.email_services.test.store', $emailService->id), [
+                'to' => 'example@example.org',
+                'from' => 'test@sendportal.io',
+                'subject' => 'test',
+                'body' => 'test',
+            ])
+            ->assertRedirect(route('sendportal.email_services.test.create', $emailService->id))
+            ->assertSessionHas('error', 'Failed to dispatch test email.');
+    }
 }

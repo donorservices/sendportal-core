@@ -7,13 +7,18 @@ namespace Sendportal\Base\Http\Controllers\Api\Webhooks;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Sendportal\Base\Events\Webhooks\PostalWebhookReceived;
+use Sendportal\Base\Http\Controllers\Api\Webhooks\Concerns\DecodesJsonPayload;
 use Sendportal\Base\Http\Controllers\Controller;
 
 class PostalWebhooksController extends Controller
 {
+    use DecodesJsonPayload;
+
     public function handle(): Response
     {
-        $payload = json_decode(request()->getContent(), true);
+        if (($payload = $this->jsonPayload()) === null) {
+            return $this->invalidPayloadResponse('Postal');
+        }
 
         Log::info('Postal webhook received');
 

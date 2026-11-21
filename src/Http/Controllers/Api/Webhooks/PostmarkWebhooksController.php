@@ -7,14 +7,18 @@ namespace Sendportal\Base\Http\Controllers\Api\Webhooks;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Sendportal\Base\Events\Webhooks\PostmarkWebhookReceived;
+use Sendportal\Base\Http\Controllers\Api\Webhooks\Concerns\DecodesJsonPayload;
 use Sendportal\Base\Http\Controllers\Controller;
 
 class PostmarkWebhooksController extends Controller
 {
+    use DecodesJsonPayload;
+
     public function handle(): Response
     {
-        /** @var array $payload */
-        $payload = json_decode(request()->getContent(), true);
+        if (($payload = $this->jsonPayload()) === null) {
+            return $this->invalidPayloadResponse('Postmark');
+        }
 
         Log::info('Postmark webhook received');
 

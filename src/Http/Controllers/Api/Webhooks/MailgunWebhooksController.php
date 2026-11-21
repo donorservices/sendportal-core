@@ -7,14 +7,18 @@ namespace Sendportal\Base\Http\Controllers\Api\Webhooks;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Log;
 use Sendportal\Base\Events\Webhooks\MailgunWebhookReceived;
+use Sendportal\Base\Http\Controllers\Api\Webhooks\Concerns\DecodesJsonPayload;
 use Sendportal\Base\Http\Controllers\Controller;
 
 class MailgunWebhooksController extends Controller
 {
+    use DecodesJsonPayload;
+
     public function handle(): Response
     {
-        /** @var array $payload */
-        $payload = json_decode(request()->getContent(), true);
+        if (($payload = $this->jsonPayload()) === null) {
+            return $this->invalidPayloadResponse('Mailgun');
+        }
 
         $payload = $this->stripAttachments($payload);
 

@@ -4,8 +4,6 @@ namespace Sendportal\Base\Adapters;
 
 use Illuminate\Support\Arr;
 use Sendportal\Base\Services\Messages\MessageTrackingOptions;
-use Symfony\Component\Mailer\Exception\TransportException;
-use Symfony\Component\Mailer\Mailer;
 use Symfony\Component\Mailer\SentMessage;
 use Symfony\Component\Mailer\Transport\Dsn;
 use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
@@ -15,32 +13,25 @@ use Symfony\Component\Mime\Email;
 
 class SmtpAdapter extends BaseMailAdapter
 {
-    /** @var Mailer */
-    protected $client;
-
     /** @var EsmtpTransport */
     protected $transport;
 
+    /**
+     * Sends straight through the transport rather than Symfony's Mailer, whose
+     * send() returns void: the transport hands back the SentMessage, so we can
+     * store a real message ID instead of a placeholder.
+     *
+     * A failed send throws (TransportExceptionInterface) instead of being
+     * swallowed, so the message is not marked as sent and the queued job fails
+     * and can be retried, like the API-based adapters.
+     *
+     * @throws \Symfony\Component\Mailer\Exception\TransportExceptionInterface
+     */
     public function send(string $fromEmail, string $fromName, string $toEmail, string $subject, MessageTrackingOptions $trackingOptions, string $content): string
     {
-        try {
-            $result = $this->resolveClient()->send($this->resolveMessage($subject, $content, $fromEmail, $fromName, $toEmail));
-        } catch (TransportException $e) {
-            return $this->resolveMessageId(0);
-        }
+        $result = $this->resolveTransport()->send($this->resolveMessage($subject, $content, $fromEmail, $fromName, $toEmail));
 
         return $this->resolveMessageId($result);
-    }
-
-    protected function resolveClient(): Mailer
-    {
-        if ($this->client) {
-            return $this->client;
-        }
-
-        $this->client = new Mailer($this->resolveTransport());
-
-        return $this->client;
     }
 
     protected function resolveTransport(): EsmtpTransport
@@ -86,8 +77,13 @@ class SmtpAdapter extends BaseMailAdapter
         return $msg;
     }
 
-    protected function resolveMessageId($result): string
+    protected function resolveMessageId(?SentMessage $result): string
     {
-        return ($result instanceof SentMessage) ? $result->getMessageId() : '-1';
+        if (! $result) {
+            // Only possible if a transport listener rejected the message.
+            throw new \RuntimeException('The SMTP transport did not send the message.');
+        }
+
+        return $result->getMessageId();
     }
 }

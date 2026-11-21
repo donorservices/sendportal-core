@@ -67,7 +67,9 @@ class CampaignStoreRequest extends BaseCampaignStoreRequest
                 'boolean',
             ],
             'tags' => [
-                'required_unless:send_to_all,1',
+                // Not 'required_unless:send_to_all,1': that compares strictly
+                // when the value is a bool, so JSON `true` still required tags.
+                Rule::requiredIf(fn () => ! $this->boolean('send_to_all')),
                 'array',
                 Rule::in($tags),
             ],

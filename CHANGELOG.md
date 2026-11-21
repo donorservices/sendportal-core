@@ -1,5 +1,13 @@
 # Sendportal Core
 
+## 3.1.1 - 2026-11-20 (donorservices fork)
+- Fix: SMTP send failures were swallowed and the message marked as sent. The SMTP adapter now throws, so the message stays unsent and the queued job fails (and can be retried), like the API-based adapters
+- Fix: SMTP messages stored `-1` as their message ID; they now store the ID the server reports (or the generated Message-ID)
+- Fix: sending a campaign test email or a draft message no longer returns a 500 when the email service rejects it; the reason is shown instead
+- Fix: "Failed to dispatch test email." was flashed under a numeric key and never shown
+- Fix: webhook endpoints returned 500 for a body that is not a JSON object; they now return 400 (SendGrid also skips array entries that are not objects)
+- Fix: API campaign create/update required `tags` when `send_to_all` was JSON `true` (only `1` worked)
+
 ## 3.1.0 - 2026-11-20 (donorservices fork)
 - Support Laravel 12 and 13 (`illuminate/support ^11.0|^12.0|^13.0`); tested on PHP 8.4 with Symfony 8.1
 - Tests migrated to PHPUnit 12 (`#[Test]` attributes, stubs instead of mocks without expectations)

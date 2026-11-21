@@ -141,4 +141,39 @@ class CampaignsControllerTest extends TestCase
         $this->assertDatabaseMissing('sendportal_campaigns', $request);
         self::assertEquals($campaign->updated_at, $campaign->fresh()->updated_at);
     }
+
+    #[Test]
+    public function send_to_all_accepts_a_json_boolean(): void
+    {
+        $emailService = $this->createEmailService();
+
+        $this->postJson(route('sendportal.api.campaigns.store'), $this->campaignPayload($emailService->id, ['send_to_all' => true]))
+            ->assertStatus(Response::HTTP_CREATED)
+            ->assertJsonPath('data.send_to_all', true);
+    }
+
+    #[Test]
+    public function tags_are_required_when_not_sending_to_all(): void
+    {
+        $emailService = $this->createEmailService();
+
+        foreach ([false, 0, '0'] as $sendToAll) {
+            $this->postJson(route('sendportal.api.campaigns.store'), $this->campaignPayload($emailService->id, ['send_to_all' => $sendToAll]))
+                ->assertStatus(Response::HTTP_UNPROCESSABLE_ENTITY)
+                ->assertJsonValidationErrors('tags');
+        }
+    }
+
+    private function campaignPayload(int $emailServiceId, array $overrides = []): array
+    {
+        return array_merge([
+            'name' => $this->faker->colorName(),
+            'subject' => $this->faker->word(),
+            'from_name' => $this->faker->word(),
+            'from_email' => $this->faker->safeEmail(),
+            'email_service_id' => $emailServiceId,
+            'content' => $this->faker->sentence(),
+            'scheduled_at' => now(),
+        ], $overrides);
+    }
 }

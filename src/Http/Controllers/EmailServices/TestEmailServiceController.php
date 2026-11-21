@@ -47,7 +47,7 @@ class TestEmailServiceController extends Controller
             if (! $messageId) {
                 return redirect()
                     ->back()
-                    ->with(['error', __('Failed to dispatch test email.')]);
+                    ->with('error', __('Failed to dispatch test email.'));
             }
 
             return redirect()
